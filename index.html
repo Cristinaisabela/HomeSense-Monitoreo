@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeSense - Monitoreo de Paciente</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3a7bd5;
+            --primary-dark: #2c5fb3;
+            --secondary: #00d2ff;
+            --success: #4CAF50;
+            --warning: #FF9800;
+            --danger: #F44336;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+            --card-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f7fa;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Estilos para el proceso de registro */
+        .registration-process {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 20px;
+            position: relative;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--light-gray);
+            color: var(--gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-bottom: 8px;
+            transition: var(--transition);
+        }
+
+        .step.active .step-number {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .step.completed .step-number {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .step-label {
+            font-size: 14px;
+            color: var(--gray);
+            font-weight: 500;
+        }
+
+        .step.active .step-label {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .step.completed .step-label {
+            color: var(--success);
+        }
+
+        .step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: calc(50% + 30px);
+            width: 40px;
+            height: 2px;
+            background-color: var(--light-gray);
+        }
+
+        .step.completed:not(:last-child)::after {
+            background-color: var(--success);
+        }
+
+        /* Formularios */
+        .form-container {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            padding: 30px;
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .form-container.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-header {
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .form-header h2 {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .form-header p {
+            color: var(--gray);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            transition: var(--transition);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(58, 123, 213, 0.2);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background-color: rgba(58, 123, 213, 0.1);
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        /* Dashboard */
+        #dashboard {
+            display: none;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .patient-info {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            align-items: center;
+        }
+
+        .patient-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            font-size: 32px;
+        }
+
+        .patient-details h2 {
+            font-family: 'Montserrat', sans-serif;
+            margin-bottom: 5px;
+            font-size: 24px;
+        }
+
+        .patient-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .patient-meta span {
+            display: flex;
+            align-items: center;
+        }
+
+        .patient-meta i {
+            margin-right: 5px;
+            font-size: 16px;
+        }
+
+        .emergency-contact {
+            background-color: rgba(244, 67, 54, 0.1);
+            border-left: 4px solid var(--danger);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 10px;
+        }
+
+        .emergency-contact h4 {
+            color: var(--danger);
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .emergency-contact p {
+            font-size: 13px;
+        }
+
+        .connection-status {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            background: rgba(0,0,0,0.05);
+        }
+
+        .connected {
+            color: var(--success);
+        }
+
+        .disconnected {
+            color: var(--danger);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+            color: var(--secondary);
+        }
+
+        .card-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 0;
+            color: var(--dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-value {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 36px;
+            margin: 10px 0;
+            color: var(--dark);
+        }
+
+        .card-unit {
+            font-size: 16px;
+            color: var(--gray);
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+            font-size: 13px;
+            color: var(--gray);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-ok {
+            background-color: var(--success);
+        }
+
+        .status-warning {
+            background-color: var(--warning);
+        }
+
+        .status-danger {
+            background-color: var(--danger);
+        }
+
+        .medical-section {
+            grid-column: span 2;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .medical-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .medical-card h3 {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .medical-card h3 i {
+            margin-right: 10px;
+        }
+
+        .medication-schedule {
+            margin-top: 15px;
+        }
+
+        .medication-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .medication-item:last-child {
+            border-bottom: none;
+        }
+
+        .med-name {
+            font-weight: 500;
+            flex: 2;
+        }
+
+        .med-time {
+            flex: 1;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .med-dose {
+            flex: 1;
+            color: var(--gray);
+            font-size: 14px;
+        }
+
+        .med-action {
+            flex: 0 0 100px;
+            text-align: right;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+        .disease-list {
+            list-style-type: none;
+        }
+
+        .disease-item {
+            background-color: var(--light);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .disease-item i {
+            margin-right: 10px;
+            color: var(--warning);
+        }
+
+        .alert-card {
+            grid-column: 1 / -1;
+            background-color: rgba(244, 67, 54, 0.05);
+            border-left: 4px solid var(--danger);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+
+        .alert-icon {
+            margin-right: 12px;
+            color: var(--danger);
+        }
+
+        .alert-message {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            color: var(--danger);
+            flex-grow: 1;
+        }
+
+        .alert-time {
+            font-size: 13px;
+            color: var(--gray);
+        }
+
+        .chart-container {
+            grid-column: 1 / -1;
+            height: 350px;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .patient-info {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .patient-avatar {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+            
+            .patient-meta {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Proceso de registro -->
+        <div class="registration-process">
+            <div class="step active" id="step1">
+                <div class="step-number">1</div>
+                <div class="step-label">Datos Básicos</div>
+            </div>
+            <div class="step" id="step2">
+                <div class="step-number">2</div>
+                <div class="step-label">Historial Clínico</div>
+            </div>
+            <div class="step" id="step3">
+                <div class="step-number">3</div>
+                <div class="step-label">Monitoreo</div>
+            </div>
+        </div>
+
+        <!-- Formulario 1: Datos básicos -->
+        <div class="form-container active" id="form1">
+            <div class="form-header">
+                <h2><i class="fas fa-user-circle"></i> Datos del Paciente</h2>
+                <p>Ingresa la información básica del paciente</p>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="patient-name">Nombre completo</label>
+                    <input type="text" id="patient-name" placeholder="Ej: Juan Pérez" required>
+                </div>
+                <div class="form-group">
+                    <label for="patient-age">Edad</label>
+                    <input type="number" id="patient-age" min="1" max="120" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="patient-id">Identificación</label>
+                    <input type="text" id="patient-id" placeholder="DNI, Pasaporte, etc.">
+                </div>
+                <div class="form-group">
+                    <label for="patient-phone">Teléfono</label>
+                    <input type="tel" id="patient-phone" placeholder="+1234567890">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="patient-room">Habitación/Localización</label>
+                <input type="text" id="patient-room" placeholder="Ej: Habitación 201, Planta baja" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="emergency-name">Contacto de emergencia</label>
+                <input type="text" id="emergency-name" placeholder="Nombre completo" required>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="emergency-phone">Teléfono de emergencia</label>
+                    <input type="tel" id="emergency-phone" placeholder="+1234567890" required>
+                </div>
+                <div class="form-group">
+                    <label for="emergency-relation">Parentesco</label>
+                    <input type="text" id="emergency-relation" placeholder="Ej: Esposa, Hijo, etc.">
+                </div>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn" onclick="nextStep(1)">Siguiente <i class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
+
+        <!-- Formulario 2: Historial clínico -->
+        <div class="form-container" id="form2">
+            <div class="form-header">
+                <h2><i class="fas fa-heartbeat"></i> Historial Clínico</h2>
+                <p>Información médica relevante del paciente</p>
+            </div>
+            
+            <div class="form-group">
+                <label>Enfermedades conocidas</label>
+                <div id="diseases-container">
+                    <div class="form-row disease-input">
+                        <select class="disease-select">
+                            <option value="">Seleccione una enfermedad</option>
+                            <option value="diabetes">Diabetes</option>
+                            <option value="hipertension">Hipertensión</option>
+                            <option value="asma">Asma</option>
+                            <option value="cardiopatia">Cardiopatía</option>
+                            <option value="epoc">EPOC</option>
+                            <option value="other">Otra</option>
+                        </select>
+                        <input type="text" class="disease-other" placeholder="Especifique" style="display:none;">
+                    </div>
+                </div>
+                <button type="button" class="btn-outline btn-sm" onclick="addDiseaseField()">
+                    <i class="fas fa-plus"></i> Añadir enfermedad
+                </button>
+            </div>
+            
+            <div class="form-group">
+                <label>Medicamentos programados</label>
+                <div id="medications-container">
+                    <div class="medication-input form-row">
+                        <input type="text" placeholder="Nombre del medicamento" class="med-name-input">
+                        <input type="text" placeholder="Dosis (ej: 500mg)" class="med-dose-input">
+                        <input type="time" class="med-time-input">
+                    </div>
+                </div>
+                <button type="button" class="btn-outline btn-sm" onclick="addMedicationField()">
+                    <i class="fas fa-plus"></i> Añadir medicamento
+                </button>
+            </div>
+            
+            <div class="form-group">
+                <label for="allergies">Alergias conocidas</label>
+                <textarea id="allergies" rows="2" placeholder="Lista de alergias a medicamentos, alimentos, etc."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="additional-notes">Notas adicionales</label>
+                <textarea id="additional-notes" rows="3" placeholder="Otra información médica relevante"></textarea>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn-outline" onclick="prevStep(2)"><i class="fas fa-arrow-left"></i> Anterior</button>
+                <button class="btn" onclick="nextStep(2)">Siguiente <i class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
+
+        <!-- Dashboard de monitoreo -->
+        <div id="dashboard">
+            <div class="dashboard-header">
+                <div class="patient-info">
+                    <div class="patient-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="patient-details">
+                        <h2 id="display-name"></h2>
+                        <div class="patient-meta">
+                            <span><i class="fas fa-birthday-cake"></i> <span id="display-age"></span> años</span>
+                            <span><i class="fas fa-door-open"></i> <span id="display-room"></span></span>
+                            <span><i class="fas fa-id-card"></i> <span id="display-id"></span></span>
+                        </div>
+                        <div class="emergency-contact">
+                            <h4><i class="fas fa-exclamation-triangle"></i> Contacto de emergencia</h4>
+                            <p id="display-emergency"></p>
+                        </div>
+                    </div>
+                </div>
+                <div id="connection-status" class="connection-status disconnected">Desconectado</div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="alert-card" id="alert-container" style="display: none;">
+                    <svg class="alert-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                    </svg>
+                    <div class="alert-message" id="alert-message"></div>
+                    <div class="alert-time" id="alert-time"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <svg class="card-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M15 13V5c0-1.66-1.34-3-3-3S9 3.34 9 5v8c-1.21.91-2 2.37-2 4 0 2.76 2.24 5 5 5s5-2.24 5-5c0-1.63-.79-3.09-2-4zm-4-8c0-.55.45-1 1-1s1 .45 1 1h-1v1h1v2h-1v1h1v2h-2V5z"/>
+                        </svg>
+                        <h2 class="card-title">Temperatura</h2>
+                    </div>
+                    <div class="card-value" id="temperature">--</div>
+                    <div class="card-unit">°C</div>
+                    <div class="card-footer">
+                        <span class="status-indicator" id="temp-status"></span>
+                        <span id="temp-time">Esperando datos...</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <svg class="card-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                            <path d="M12 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                        </svg>
+                        <h2 class="card-title">Humedad</h2>
+                    </div>
+                    <div class="card-value" id="humidity">--</div>
+                    <div class="card-unit">%</div>
+                    <div class="card-footer">
+                        <span class="status-indicator" id="hum-status"></span>
+                        <span id="hum-time">Esperando datos...</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <svg class="card-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                            <path d="M12 5v14c3.86 0 7-3.14 7-7s-3.14-7-7-7z"/>
+                        </svg>
+                        <h2 class="card-title">Presión</h2>
+                    </div>
+                    <div class="card-value" id="pressure">--</div>
+                    <div class="card-unit">hPa</div>
+                    <div class="card-footer">
+                        <span class="status-indicator" id="pres-status"></span>
+                        <span id="pres-time">Esperando datos...</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <svg class="card-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                            <path d="M12 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                            <path d="M16.24 7.76c-1.22-1.22-2.83-1.93-4.55-1.93-1.72 0-3.33.71-4.55 1.93L7.05 7.05c1.54-1.54 3.59-2.39 5.77-2.39s4.23.85 5.77 2.39l-1.41 1.41z"/>
+                        </svg>
+                        <h2 class="card-title">Estado de Tos</h2>
+                    </div>
+                    <div class="card-value" id="cough-status">Normal</div>
+                    <div class="card-footer">
+                        <span class="status-indicator status-ok" id="cough-indicator"></span>
+                        <span id="cough-time">Sin detecciones</span>
+                    </div>
+                </div>
+
+                <div class="medical-section">
+                    <div class="medical-card card">
+                        <h3><i class="fas fa-disease"></i> Enfermedades</h3>
+                        <ul class="disease-list" id="disease-list">
+                            <!-- Dinámico -->
+                        </ul>
+                    </div>
+                    
+                    <div class="medical-card card">
+                        <h3><i class="fas fa-pills"></i> Medicación Programada</h3>
+                        <div class="medication-schedule" id="medication-schedule">
+                            <!-- Dinámico -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="medical-section">
+                    <div class="medical-card card">
+                        <h3><i class="fas fa-allergies"></i> Alergias</h3>
+                        <div id="allergies-display">
+                            <p class="no-data">No se registraron alergias</p>
+                        </div>
+                    </div>
+                    
+                    <div class="medical-card card">
+                        <h3><i class="fas fa-notes-medical"></i> Notas Médicas</h3>
+                        <div id="notes-display">
+                            <p class="no-data">No hay notas adicionales</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="data-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Datos del paciente
+        const patientData = {
+            basic: {},
+            medical: {
+                diseases: [],
+                medications: [],
+                allergies: '',
+                notes: ''
+            }
+        };
+
+        // Configuración del sistema
+        const config = {
+            espIp: '192.168.1.57',
+            updateInterval: 2000,
+            maxHistory: 20
+        };
+
+        // Estado de la aplicación
+        const appState = {
+            connected: false,
+            dataHistory: {
+                labels: [],
+                temperature: [],
+                humidity: [],
+                pressure: []
+            }
+        };
+
+        // Elementos del DOM
+        const dom = {
+            forms: {
+                basic: document.getElementById('form1'),
+                medical: document.getElementById('form2')
+            },
+            dashboard: document.getElementById('dashboard'),
+            steps: {
+                step1: document.getElementById('step1'),
+                step2: document.getElementById('step2'),
+                step3: document.getElementById('step3')
+            },
+            // ... (otros elementos del dashboard que ya tenías)
+        };
+
+        // Manejo de los pasos del formulario
+        function nextStep(currentStep) {
+            if (currentStep === 1) {
+                // Validar y guardar datos básicos
+                if (!validateBasicForm()) return;
+                saveBasicData();
+                
+                // Actualizar UI de pasos
+                dom.steps.step1.classList.remove('active');
+                dom.steps.step1.classList.add('completed');
+                dom.steps.step2.classList.add('active');
+                
+                // Mostrar siguiente formulario
+                dom.forms.basic.classList.remove('active');
+                dom.forms.medical.classList.add('active');
+            } else if (currentStep === 2) {
+                // Validar y guardar datos médicos
+                if (!validateMedicalForm()) return;
+                saveMedicalData();
+                
+                // Actualizar UI de pasos
+                dom.steps.step2.classList.remove('active');
+                dom.steps.step2.classList.add('completed');
+                dom.steps.step3.classList.add('active');
+                
+                // Ocultar formularios y mostrar dashboard
+                dom.forms.medical.classList.remove('active');
+                dom.dashboard.style.display = 'block';
+                
+                // Inicializar dashboard con los datos del paciente
+                initializeDashboard();
+                startMonitoring();
+            }
+        }
+
+        function prevStep(currentStep) {
+            if (currentStep === 2) {
+                // Volver al paso 1
+                dom.steps.step2.classList.remove('active');
+                dom.steps.step1.classList.add('active');
+                dom.steps.step1.classList.remove('completed');
+                
+                // Mostrar formulario anterior
+                dom.forms.medical.classList.remove('active');
+                dom.forms.basic.classList.add('active');
+            }
+        }
+
+        function validateBasicForm() {
+            const name = document.getElementById('patient-name').value.trim();
+            const age = document.getElementById('patient-age').value;
+            const room = document.getElementById('patient-room').value.trim();
+            const emergencyName = document.getElementById('emergency-name').value.trim();
+            const emergencyPhone = document.getElementById('emergency-phone').value.trim();
+            
+            if (!name || !age || !room || !emergencyName || !emergencyPhone) {
+                alert('Por favor complete todos los campos obligatorios');
+                return false;
+            }
+            
+            return true;
+        }
+
+        function saveBasicData() {
+            patientData.basic = {
+                name: document.getElementById('patient-name').value.trim(),
+                age: document.getElementById('patient-age').value,
+                id: document.getElementById('patient-id').value.trim(),
+                phone: document.getElementById('patient-phone').value.trim(),
+                room: document.getElementById('patient-room').value.trim(),
+                emergency: {
+                    name: document.getElementById('emergency-name').value.trim(),
+                    phone: document.getElementById('emergency-phone').value.trim(),
+                    relation: document.getElementById('emergency-relation').value.trim()
+                }
+            };
+        }
+
+        function validateMedicalForm() {
+            // Validación básica - puedes expandir esto
+            return true;
+        }
+
+        function saveMedicalData() {
+            // Guardar enfermedades
+            patientData.medical.diseases = [];
+            const diseaseSelects = document.querySelectorAll('.disease-select');
+            diseaseSelects.forEach(select => {
+                if (select.value) {
+                    const disease = {
+                        type: select.value,
+                        name: select.value === 'other' 
+                            ? select.nextElementSibling.value 
+                            : select.options[select.selectedIndex].text
+                    };
+                    patientData.medical.diseases.push(disease);
+                }
+            });
+            
+            // Guardar medicamentos
+            patientData.medical.medications = [];
+            const medInputs = document.querySelectorAll('.medication-input');
+            medInputs.forEach(med => {
+                const name = med.querySelector('.med-name-input').value.trim();
+                const dose = med.querySelector('.med-dose-input').value.trim();
+                const time = med.querySelector('.med-time-input').value;
+                
+                if (name && dose && time) {
+                    patientData.medical.medications.push({
+                        name,
+                        dose,
+                        time
+                    });
+                }
+            });
+            
+            // Guardar alergias y notas
+            patientData.medical.allergies = document.getElementById('allergies').value.trim();
+            patientData.medical.notes = document.getElementById('additional-notes').value.trim();
+        }
+
+        // Funciones para añadir campos dinámicos
+        function addDiseaseField() {
+            const container = document.getElementById('diseases-container');
+            const newField = document.createElement('div');
+            newField.className = 'form-row disease-input';
+            newField.innerHTML = `
+                <select class="disease-select">
+                    <option value="">Seleccione una enfermedad</option>
+                    <option value="diabetes">Diabetes</option>
+                    <option value="hipertension">Hipertensión</option>
+                    <option value="asma">Asma</option>
+                    <option value="cardiopatia">Cardiopatía</option>
+                    <option value="epoc">EPOC</option>
+                    <option value="other">Otra</option>
+                </select>
+                <input type="text" class="disease-other" placeholder="Especifique" style="display:none;">
+            `;
+            container.appendChild(newField);
+            
+            // Agregar evento para mostrar campo "Otra"
+            newField.querySelector('.disease-select').addEventListener('change', function() {
+                const otherInput = this.nextElementSibling;
+                otherInput.style.display = this.value === 'other' ? 'block' : 'none';
+            });
+        }
+
+        function addMedicationField() {
+            const container = document.getElementById('medications-container');
+            const newField = document.createElement('div');
+            newField.className = 'medication-input form-row';
+            newField.innerHTML = `
+                <input type="text" placeholder="Nombre del medicamento" class="med-name-input">
+                <input type="text" placeholder="Dosis (ej: 500mg)" class="med-dose-input">
+                <input type="time" class="med-time-input">
+            `;
+            container.appendChild(newField);
+        }
+
+        // Inicializar dashboard con datos del paciente
+        function initializeDashboard() {
+            // Mostrar información básica
+                        // Mostrar información básica del paciente
+            document.getElementById('display-name').textContent = patientData.basic.name;
+            document.getElementById('display-age').textContent = patientData.basic.age;
+            document.getElementById('display-room').textContent = patientData.basic.room;
+            document.getElementById('display-id').textContent = patientData.basic.id || 'N/A';
+            
+            // Mostrar contacto de emergencia
+            const emergency = patientData.basic.emergency;
+            document.getElementById('display-emergency').textContent = 
+                `${emergency.name} (${emergency.relation}) - ${emergency.phone}`;
+            
+            // Mostrar enfermedades
+            const diseaseList = document.getElementById('disease-list');
+            if (patientData.medical.diseases.length > 0) {
+                diseaseList.innerHTML = '';
+                patientData.medical.diseases.forEach(disease => {
+                    const li = document.createElement('li');
+                    li.className = 'disease-item';
+                    li.innerHTML = `
+                        <i class="fas fa-${getDiseaseIcon(disease.type)}"></i>
+                        ${disease.name}
+                    `;
+                    diseaseList.appendChild(li);
+                });
+            } else {
+                diseaseList.innerHTML = '<li class="no-data">No se registraron enfermedades</li>';
+            }
+            
+            // Mostrar medicamentos programados
+            const medSchedule = document.getElementById('medication-schedule');
+            if (patientData.medical.medications.length > 0) {
+                medSchedule.innerHTML = '';
+                patientData.medical.medications.forEach(med => {
+                    const medItem = document.createElement('div');
+                    medItem.className = 'medication-item';
+                    medItem.innerHTML = `
+                        <span class="med-name">${med.name}</span>
+                        <span class="med-dose">${med.dose}</span>
+                        <span class="med-time">${formatTime(med.time)}</span>
+                        <span class="med-action">
+                            <button class="btn-outline btn-sm">Confirmar</button>
+                        </span>
+                    `;
+                    medSchedule.appendChild(medItem);
+                });
+            } else {
+                medSchedule.innerHTML = '<p class="no-data">No hay medicamentos programados</p>';
+            }
+            
+            // Mostrar alergias
+            const allergiesDisplay = document.getElementById('allergies-display');
+            if (patientData.medical.allergies) {
+                allergiesDisplay.innerHTML = `
+                    <div class="allergy-item">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>${patientData.medical.allergies}</span>
+                    </div>
+                `;
+            }
+            
+            // Mostrar notas médicas
+            const notesDisplay = document.getElementById('notes-display');
+            if (patientData.medical.notes) {
+                notesDisplay.innerHTML = `
+                    <div class="notes-content">
+                        <p>${patientData.medical.notes}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Funciones auxiliares
+        function getDiseaseIcon(diseaseType) {
+            const icons = {
+                diabetes: 'syringe',
+                hipertension: 'heartbeat',
+                asma: 'wind',
+                cardiopatia: 'heart',
+                epoc: 'lungs',
+                other: 'question-circle'
+            };
+            return icons[diseaseType] || 'user-md';
+        }
+
+        function formatTime(timeString) {
+            if (!timeString) return '';
+            const [hours, minutes] = timeString.split(':');
+            const period = hours >= 12 ? 'PM' : 'AM';
+            const formattedHours = hours % 12 || 12;
+            return `${formattedHours}:${minutes} ${period}`;
+        }
+
+        // Sistema de monitoreo (similar al anterior pero mejorado)
+        let chart;
+        function initChart() {
+            const ctx = document.getElementById('data-chart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Temperatura (°C)',
+                            data: [],
+                            borderColor: '#3a7bd5',
+                            backgroundColor: 'rgba(58, 123, 213, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Humedad (%)',
+                            data: [],
+                            borderColor: '#00d2ff',
+                            backgroundColor: 'rgba(0, 210, 255, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `Monitoreo Ambiental - ${patientData.basic.name}`,
+                            font: {
+                                family: 'Montserrat',
+                                size: 16
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    label += context.parsed.y.toFixed(1);
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Temperatura (°C)',
+                                font: {
+                                    family: 'Montserrat'
+                                }
+                            },
+                            min: 10,
+                            max: 40
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Humedad (%)',
+                                font: {
+                                    family: 'Montserrat'
+                                }
+                            },
+                            min: 0,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateChart(data) {
+            const now = new Date();
+            const timeLabel = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            // Agregar nuevos datos
+            appState.dataHistory.labels.push(timeLabel);
+            appState.dataHistory.temperature.push(data.temperatura);
+            appState.dataHistory.humidity.push(data.humedad);
+            
+            // Limitar el historial
+            if (appState.dataHistory.labels.length > config.maxHistory) {
+                appState.dataHistory.labels.shift();
+                appState.dataHistory.temperature.shift();
+                appState.dataHistory.humidity.shift();
+            }
+            
+            // Actualizar gráfico
+            chart.data.labels = appState.dataHistory.labels;
+            chart.data.datasets[0].data = appState.dataHistory.temperature;
+            chart.data.datasets[1].data = appState.dataHistory.humidity;
+            chart.update();
+        }
+
+        function updateUI(data) {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            // Actualizar valores
+            document.getElementById('temperature').textContent = data.temperatura?.toFixed(1) || '--';
+            document.getElementById('humidity').textContent = data.humedad?.toFixed(1) || '--';
+            document.getElementById('pressure').textContent = data.presion?.toFixed(1) || '--';
+            
+            // Actualizar estado de tos
+            const coughStatus = document.getElementById('cough-status');
+            const coughIndicator = document.getElementById('cough-indicator');
+            const alertContainer = document.getElementById('alert-container');
+            
+            if (data.tos === "tos_detectada") {
+                coughStatus.textContent = "Tos Detectada";
+                coughIndicator.className = "status-indicator status-danger";
+                alertContainer.style.display = "flex";
+                document.getElementById('alert-message').textContent = "Alerta: Se detectó tos en el paciente";
+                document.getElementById('alert-time').textContent = timeString;
+                
+                // Notificación de emergencia si el paciente tiene EPOC o asma
+                const hasRespiratoryCondition = patientData.medical.diseases.some(
+                    d => d.type === 'epoc' || d.type === 'asma'
+                );
+                
+                if (hasRespiratoryCondition) {
+                    showEmergencyAlert('Tos detectada en paciente con condición respiratoria');
+                }
+            } else {
+                coughStatus.textContent = "Normal";
+                coughIndicator.className = "status-indicator status-ok";
+                alertContainer.style.display = "none";
+            }
+            
+            // Actualizar tiempos
+            document.getElementById('temp-time').textContent = data.temperatura ? `Actualizado: ${timeString}` : 'Esperando datos...';
+            document.getElementById('hum-time').textContent = data.humedad ? `Actualizado: ${timeString}` : 'Esperando datos...';
+            document.getElementById('pres-time').textContent = data.presion ? `Actualizado: ${timeString}` : 'Esperando datos...';
+            document.getElementById('cough-time').textContent = `Última verificación: ${timeString}`;
+            
+            // Actualizar indicadores de estado
+            updateStatusIndicators(data);
+        }
+
+        function updateStatusIndicators(data) {
+            if (!data.temperatura) return;
+            
+            // Temperatura (umbrales personalizables según paciente)
+            let tempThresholds = { min: 36.1, max: 37.2 };
+            const hasFeverCondition = patientData.medical.diseases.some(d => d.type === 'hipertension');
+            
+            if (hasFeverCondition) {
+                tempThresholds = { min: 35.5, max: 37.0 }; // Umbrales más estrictos
+            }
+            
+            const tempStatus = document.getElementById('temp-status');
+            if (data.temperatura < tempThresholds.min || data.temperatura > tempThresholds.max) {
+                tempStatus.className = data.temperatura > 38 ? "status-indicator status-danger" : "status-indicator status-warning";
+            } else {
+                tempStatus.className = "status-indicator status-ok";
+            }
+            
+            // Humedad (30-70% normal)
+            const humStatus = document.getElementById('hum-status');
+            if (data.humedad < 30 || data.humedad > 70) {
+                humStatus.className = data.humedad < 20 || data.humedad > 80 ? "status-indicator status-danger" : "status-indicator status-warning";
+            } else {
+                humStatus.className = "status-indicator status-ok";
+            }
+            
+            // Presión (970-1030 hPa normal)
+            const presStatus = document.getElementById('pres-status');
+            if (data.presion < 970 || data.presion > 1030) {
+                presStatus.className = "status-indicator status-warning";
+            } else {
+                presStatus.className = "status-indicator status-ok";
+            }
+        }
+
+        function showEmergencyAlert(message) {
+            // Enviar notificación al contacto de emergencia
+            const emergency = patientData.basic.emergency;
+            console.log(`Enviando alerta a ${emergency.name} (${emergency.phone}): ${message}`);
+            
+            // Mostrar notificación en UI
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'emergency-alert';
+            alertDiv.innerHTML = `
+                <div class="emergency-alert-content">
+                    <i class="fas fa-bell"></i>
+                    <div>
+                        <strong>ALERTA MÉDICA</strong>
+                        <p>${message}</p>
+                        <small>Notificando a ${emergency.name}</small>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            // Reproducir sonido de alerta
+            const alertSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3');
+            alertSound.play();
+            
+            // Eliminar alerta después de 30 segundos
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 30000);
+        }
+
+        async function fetchData() {
+            try {
+                const response = await fetch(`http://${config.espIp}/data`, {
+                    signal: AbortSignal.timeout(3000)
+                });
+                
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const data = await response.json();
+                
+                // Validar datos recibidos
+                if (typeof data.temperatura !== 'number' || 
+                    typeof data.humedad !== 'number' || 
+                    typeof data.presion !== 'number') {
+                    throw new Error("Datos inválidos recibidos");
+                }
+                
+                updateUI(data);
+                updateChart(data);
+                
+                if (!appState.connected) {
+                    appState.connected = true;
+                    updateConnectionStatus(true, config.espIp);
+                }
+                
+                return true;
+            } catch (error) {
+                console.error("Error al obtener datos:", error);
+                if (appState.connected) {
+                    appState.connected = false;
+                    updateConnectionStatus(false);
+                }
+                
+                // Reintentar después de un intervalo
+                setTimeout(fetchData, config.retryInterval || 5000);
+                return false;
+            }
+        }
+
+        function updateConnectionStatus(connected, ip = null) {
+            const statusElement = document.getElementById('connection-status');
+            
+            if (connected) {
+                statusElement.textContent = `Conectado: ${ip}`;
+                statusElement.classList.remove("disconnected");
+                statusElement.classList.add("connected");
+            } else {
+                statusElement.textContent = "Desconectado";
+                statusElement.classList.remove("connected");
+                statusElement.classList.add("disconnected");
+            }
+        }
+
+        function startMonitoring() {
+            initChart();
+            updateConnectionStatus(false);
+            
+            // Configurar actualizaciones periódicas
+            setInterval(fetchData, config.updateInterval);
+            
+            // Primera actualización inmediata
+            fetchData();
+        }
+
+        // Event listeners para campos dinámicos
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mostrar campo "Otra" cuando se selecciona "Otra enfermedad"
+            document.addEventListener('change', function(e) {
+                if (e.target.classList.contains('disease-select')) {
+                    const otherInput = e.target.nextElementSibling;
+                    otherInput.style.display = e.target.value === 'other' ? 'block' : 'none';
+                }
+            });
+            
+            // Añadir un campo de enfermedad al cargar
+            addDiseaseField();
+            addMedicationField();
+        });
+
+        // Permitir cerrar alertas manualmente
+        window.closeAlert = function(button) {
+            button.parentElement.style.display = 'none';
+        };
+    </script>
+</body>
+</html>
